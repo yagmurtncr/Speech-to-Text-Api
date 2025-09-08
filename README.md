@@ -1,21 +1,46 @@
-# Speech to Text API
+# 🎤 Speech-to-Text API
 
-Bu proje, ses dosyalarını metne dönüştüren, çok dilli konuşmacı ayırma (diarization) yapan, duygu analizi ekleyen ve Kafka, MongoDB, Elasticsearch entegrasyonu ile çalışan kapsamlı bir API sistemidir.
+**Çoklu ASR Motor Desteği ile Gelişmiş Ses Analiz Platformu**
+
+Bu proje, 3 farklı ASR motoru (WhisperX, WhisperX+NeMo, Nvidia Parakeet) ile ses dosyalarını metne dönüştüren, konuşmacı ayırma (diarization), duygu analizi ve Kafka, MongoDB, Elasticsearch entegrasyonu ile çalışan enterprise-grade bir API sistemidir.
+
+## ✨ Temel Özellikler
+- 🎯 **3 ASR Motoru**: WhisperX, WhisperX+NeMo, Nvidia Parakeet
+- 🎤 **Konuşmacı Ayrımı**: Pyannote.audio ile hassas segmentasyon
+- 🧠 **Duygu Analizi**: 6 kategorili HuggingFace tabanlı analiz
+- 💾 **Çoklu Depolama**: MongoDB + Elasticsearch entegrasyonu
+- 🚀 **Event-Driven**: Kafka ile asenkron işleme
+- 🐳 **Container Ready**: Docker Compose ile kolay deployment
 
 ## 🚀 Özellikler
 
-- **Çoklu ASR Engine Desteği**: 
-  - **WhisperX**: Yüksek kaliteli, kelime hizalamalı (alignment) metin dönüşümü
-  - **Nvidia Parakeet**: Çok dilli, yüksek performanslı NeMo tabanlı transkripsiyon
-  - **Faster-Whisper**: Hızlı ve verimli Whisper implementasyonu
+### 🎯 ASR Motorları
+- **WhisperX Engine**: OpenAI Whisper tabanlı, kelime hizalamalı (alignment) yüksek kaliteli transkripsiyon
+- **WhisperX + NeMo**: WhisperX ile NVIDIA NeMo entegrasyonu, gelişmiş çok dilli destek
+- **Nvidia Parakeet**: NVIDIA'nın özel NeMo tabanlı ASR motoru, enterprise-grade performans
+
+### 🎤 Konuşmacı Analizi
 - **Gelişmiş Konuşmacı Ayırma**: Pyannote.audio ile hassas konuşmacı segmentasyonu ve etiketleme
-- **Duygu Analizi**: `EmotionJSONAnalyzer` ile 6 temel duygu kategorisinde (anger, fear, joy, sadness, surprise, neutral) segment bazlı analiz
 - **Konuşmacı Yönetimi**: Konuşmacı isimlerini değiştirme, gruplama ve istatistik çıkarma
+- **Kronolojik Sıralama**: Konuşmacıları ilk görülme zamanına göre otomatik sıralama
+
+### 🧠 Duygu Analizi
+- **6 Kategorili Analiz**: anger, fear, joy, sadness, surprise, neutral duygu kategorileri
+- **Segment Bazlı**: Her konuşma segmenti için ayrı duygu tahmini
+- **HuggingFace Entegrasyonu**: j-hartmann/emotion-english-distilroberta-base modeli
+
+### 💾 Veri Yönetimi
 - **Çoklu Depolama**: 
   - **MongoDB**: Medya metadata'sı ve segment verilerinin kalıcı saklanması
   - **Elasticsearch**: Gelişmiş metin arama, filtreleme ve indexleme
 - **Event-Driven Architecture**: Kafka ile asenkron event processing ve sistemler arası bildirim
-- **Modern Web API**: FastAPI tabanlı RESTful API, otomatik OpenAPI dokumentasyonu
+
+### 🌐 Modern API
+- **FastAPI Tabanlı**: RESTful API, otomatik OpenAPI dokumentasyonu
+- **Web UI**: Jinja2 template ile kullanıcı dostu arayüz
+- **Asenkron İşleme**: Background task processing ile non-blocking operasyonlar
+
+### 🐳 DevOps & Performans
 - **Container Orkestrasyon**: Docker Compose ile tüm servislerin yönetimi
 - **Paralel İşleme**: ProcessPoolExecutor ve ThreadPoolExecutor ile performans optimizasyonu
 - **Çok Formatı Desteği**: MP3, MP4, WAV, WebM, M4A formatlarında ses dosyası işleme
@@ -23,19 +48,51 @@ Bu proje, ses dosyalarını metne dönüştüren, çok dilli konuşmacı ayırma
 ## 🏗️ Sistem Mimarisi
 
 ```
-┌─────────────┐    ┌─────────────┐    ┌──────────────────┐
-│   Client    │───▶│   FastAPI   │───▶│ WhisperX + Pyannote│
-└─────────────┘    └─────────────┘    └──────────────────┘
-                           │
-                    ┌──────┴──────┐
-              ┌─────▼─────┐ ┌─────▼─────┐
-              │  MongoDB  │ │Elasticsearch│
-              └───────────┘ └────────────┘
-                           │
-                    ┌──────▼──────┐
-                    │    Kafka    │
-                    └─────────────┘
+┌─────────────┐    ┌─────────────┐    ┌─────────────────────┐
+│   Client    │───▶│   FastAPI   │───▶│   ASR Engine       │
+└─────────────┘    └─────────────┘    │   Selection         │
+                           │          └─────────────────────┘
+                           │                    │
+                    ┌──────┴──────┐    ┌───────▼───────┐
+                    │             │    │               │
+              ┌─────▼─────┐ ┌─────▼─────┐ ┌─────▼─────┐ ┌─────▼─────┐
+              │  MongoDB  │ │Elasticsearch│ │WhisperX │ │WhisperX+ │ │Nvidia   │
+              └───────────┘ └────────────┘ │ Engine  │ │NeMo     │ │Parakeet │
+                           │               └─────────┘ └─────────┘ └─────────┘
+                    ┌──────▼──────┐              │           │           │
+                    │    Kafka    │              └───────────┼───────────┘
+                    └─────────────┘                        │
+                                                           ▼
+                                                  ┌─────────────────┐
+                                                  │   Pyannote      │
+                                                  │   Diarization   │
+                                                  └─────────────────┘
+                                                           │
+                                                           ▼
+                                                  ┌─────────────────┐
+                                                  │   Emotion       │
+                                                  │   Analysis      │
+                                                  └─────────────────┘
 ```
+
+### 🔧 ASR Motor Seçimi
+
+Sistem 3 farklı ASR motorunu destekler:
+
+1. **WhisperX Engine** (`engine: "whisperx"`)
+   - OpenAI Whisper large-v3 modeli
+   - Kelime hizalamalı (word alignment) çıktı
+   - Pyannote ile konuşmacı ayrımı
+
+2. **WhisperX + NeMo** (`engine: "whisperx_nemo"`)
+   - WhisperX tabanlı transkripsiyon
+   - NVIDIA NeMo entegrasyonu
+   - Gelişmiş çok dilli destek
+
+3. **Nvidia Parakeet** (`engine: "parakeet"`)
+   - NVIDIA'nın özel NeMo tabanlı ASR
+   - Enterprise-grade performans
+   - Yüksek doğruluk oranı
 
 ## 📋 Gereksinimler
 
