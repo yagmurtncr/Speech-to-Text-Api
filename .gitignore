@@ -1,0 +1,108 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+log/
+
+# Temporary files
+tmp_wavs/
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Audio/Video files (test files)
+*.wav
+*.mp3
+*.mp4
+*.webm
+*.m4a
+*.flac
+*.aac
+
+# Model files and checkpoints
+pretrained_models/
+wav2vec2_checkpoints/
+*.bin
+*.safetensors
+*.onnx
+*.pt
+*.pth
+
+# Test outputs and temporary JSONs
+*_test_output.json
+*_raw.json
+*_normalized.json
+hypotheses_*.json
+reference*.json
+
+# Database dumps
+*.db
+*.sqlite
+*.sqlite3
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Docker
+.dockerignore
+
+# Git
+.git/

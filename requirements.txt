@@ -1,0 +1,33 @@
+# Web
+fastapi==0.115.5
+uvicorn[standard]==0.34.0
+jinja2==3.1.6
+python-multipart==0.0.9
+python-dotenv==1.0.1
+pydantic==2.9.2
+
+# Depolama
+pymongo==4.10.1
+elasticsearch==9.1.0
+
+# Audio / ASR
+whisperx==3.4.2
+faster-whisper==1.2.0
+pyannote.audio==3.3.2
+ctranslate2==4.4.0
+numpy==2.2.6
+av==12.3.0
+pydub==0.25.1
+soundfile==0.13.1
+ffmpeg-python==0.2.0
+
+# PyTorch CPU (ayrı index'le kuruluyor)
+torch==2.6.0+cpu
+torchaudio==2.6.0+cpu
+# pip install --index-url https://download.pytorch.org/whl/cpu "torch==2.6.0+cpu" "torchaudio==2.6.0+cpu"
+
+# NeMo ASR yan bağımlılıkları
+editdistance==0.8.1
+ipython==8.28.0
+langid==1.1.6
+langdetect==1.0.9

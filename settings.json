@@ -1,0 +1,6 @@
+{
+  "python.defaultInterpreterPath": "C:\\Users\\ytunc\\OneDrive\\Desktop\\VoiceToText\\venv_whisperx\\Scripts\\python.exe",
+  "python.analysis.extraPaths": [
+    "C:\\Users\\ytunc\\OneDrive\\Desktop\\VoiceToText\\venv_whisperx\\Lib\\site-packages"
+  ]
+}

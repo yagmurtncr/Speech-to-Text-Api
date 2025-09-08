@@ -1,0 +1,162 @@
+# ======================================================
+# Speech-to-Text Projesi - Docker Compose Konfigürasyonu
+# İçerik:
+# - MongoDB
+# - Elasticsearch
+# - Zookeeper
+# - Kafka
+# - Kafka UI (Kafka yönetim arayüzü)
+# ======================================================
+
+services:
+  # -----------------------------------
+  # MongoDB - NoSQL veritabanı
+  # Ses transkriptleri ve segmentler burada tutulacak
+  # -----------------------------------
+  mongo:
+    image: mongo:6  # MongoDB 6.x sürümü
+    container_name: speech-mongo
+    restart: unless-stopped  # Container hata alsa da durdurulmaz, yeniden başlar
+    ports:
+      - "27017:27017"  # Host:Container port eşlemesi
+    environment:
+      # MongoDB root kullanıcı bilgileri
+      MONGO_INITDB_ROOT_USERNAME: mongoadmin
+      MONGO_INITDB_ROOT_PASSWORD: secret123
+    volumes:
+      - mongo_data:/data/db  # Kalıcı veri saklama (Docker volume)
+    healthcheck:
+      # MongoDB'nin çalışıp çalışmadığını kontrol eden komut
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 60s   # Her 60 saniyede bir kontrol
+      timeout: 10s    # 10 saniye içinde cevap vermezse hata
+      retries: 3      # 3 kez başarısız olursa unhealthy
+      start_period: 60s  # İlk sağlık kontrolünden önce 60 sn bekle
+
+  # -----------------------------------
+  # Elasticsearch - Metin arama ve indexleme
+  # Transkript metinleri hızlı arama için burada tutulacak
+  # -----------------------------------
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
+    container_name: speech-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node         # Tek node çalışması için
+      - xpack.security.enabled=false       # Güvenlik (şifre) devre dışı
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g          # JVM heap boyutları
+      - cluster.name=docker-cluster         # Cluster ismi
+      - bootstrap.memory_lock=true          # Bellek kilitleme (swap'i önlemek için)
+    ports:
+      - "9200:9200"  # REST API erişimi
+    volumes:
+      - es_data:/usr/share/elasticsearch/data  # Kalıcı veri saklama
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s  # Elasticsearch açılışta biraz yavaş olabilir
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+
+  # -----------------------------------
+  # Zookeeper - Kafka için gerekli koordinasyon servisi
+  # Kafka brokerlarının yönetimi için çalışır
+  # -----------------------------------
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: speech-zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 32181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "32181:32181"  # Host:Container
+    healthcheck:
+      # "ruok" komutu ile Zookeeper ayakta mı kontrolü
+      test: ["CMD-SHELL", "echo ruok | nc localhost 32181 || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # -----------------------------------
+  # Kafka - Mesaj kuyruğu sistemi
+  # Ses dosyası işleme durumları buradan event olarak yayınlanacak
+  # -----------------------------------
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: speech-kafka
+    restart: unless-stopped
+    ports:
+      - "9093:9093"  # Host üzerinden Kafka'ya erişim (PLAINTEXT_HOST listener)
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:32181
+      # Kafka dinleyicileri (broker ve dış bağlantılar için ayrı)
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1  # Tek broker olduğundan 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'    # Otomatik topic oluşturma açık
+      KAFKA_DELETE_TOPIC_ENABLE: 'true'          # Topic silme izinli
+    depends_on:
+      # Kafka başlamadan önce Zookeeper sağlıklı olmalı
+      zookeeper:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  # -----------------------------------
+  # Kafka UI - Kafka'yı web üzerinden yönetmek için arayüz
+  # -----------------------------------
+  kafka-ui:
+    image: ghcr.io/kafbat/kafka-ui:v1.3.0
+    container_name: speech-kafka-ui
+    restart: unless-stopped
+    ports:
+      - "8080:8080"  # Web arayüzü
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:32181
+      DYNAMIC_CONFIG_ENABLED: 'false'  # Dinamik config değişiklikleri kapalı
+    depends_on:
+      kafka:
+        condition: service_healthy
+      zookeeper:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+# -----------------------------------
+# VOLUMES - Kalıcı veri saklama
+# -----------------------------------
+volumes:
+  mongo_data:
+    driver: local
+  es_data:
+    driver: local
+
+# -----------------------------------
+# NETWORK - Servislerin iletişim ağı
+# -----------------------------------
+networks:
+  default:
+    name: speech-network
+    driver: bridge

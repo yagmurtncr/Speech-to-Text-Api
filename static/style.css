@@ -1,0 +1,195 @@
+/* [0] Genel tema ayarları ve yardımcı sınıflar */
+
+/* [1] Sayfa gövdesi: font, arka plan ve margin reset */
+body {
+    font: 16px/1.5 system-ui, Segoe UI, Roboto; /* [1.1] Okunabilir sistem font ailesi */
+    margin: 0;                                  /* [1.2] Varsayılan kenar boşluklarını sıfırla */
+    background: #f6f8fb;                        /* [1.3] Yumuşak açık gri arka plan */
+  }
+  
+  /* [2] Ana kapsayıcı: genişlik ve yatay hizalama */
+  .container {
+    max-width: 900px;   /* [2.1] İçerik genişlik sınırı */
+    margin: 32px auto;  /* [2.2] Üst/alt boşluk + yatay ortalama */
+    padding: 0 16px;    /* [2.3] Yanal iç boşluk */
+  }
+  
+  /* [3] Başlık alanı: dikey aralık */
+  header {
+    margin-bottom: 16px; /* [3.1] Başlık ile altındaki form arasında boşluk */
+  }
+  
+  /* [4] Başlık tipografisi */
+  h1 {
+    margin: 0 0 6px; /* [4.1] Üstte sıfır, altta ufak boşluk */
+  }
+  
+  /* [5] Alt başlık (açıklama) */
+  .subtitle {
+    color: #475569;  /* [5.1] Soluk mavi-gri ton */
+    margin: 0;       /* [5.2] Ekstra boşluk yok */
+  }
+  
+  /* [6] Upload formu: yatay hizalama, esnek sarmalama */
+  .upload-form {
+    display: flex;           /* [6.1] Yatayda hizalama */
+    gap: 12px;               /* [6.2] Elemanlar arası boşluk */
+    align-items: center;     /* [6.3] Dikeyde ortalama */
+    flex-wrap: wrap;         /* [6.4] Küçük ekranda alta sarmalanabilsin */
+    margin: 16px 0;          /* [6.5] Üst/alt boşluk */
+  }
+  
+  /* [7] Dosya seç butonu görünümü (label) */
+  .file-label {
+    background: #e5edff;     /* [7.1] Hafif mavi ton */
+    padding: 8px 12px;       /* [7.2] İç boşluk */
+    border-radius: 10px;     /* [7.3] Köşeleri yuvarla */
+    cursor: pointer;         /* [7.4] Üzerine gelince tıklanabilir imleç */
+  }
+  
+  /* [8] Asıl input’u gizle (label tıklanabilir olsun) */
+  .file-label input {
+    display: none; /* [8.1] Dosya input’u gizlenir, label tıklanınca dosya seçilir */
+  }
+  
+  /* [9] Genel buton stili */
+  button {
+    background: #2563eb; /* [9.1] Mavi arka plan */
+    color: #fff;         /* [9.2] Beyaz metin */
+    border: 0;           /* [9.3] Kenarlık yok */
+    border-radius: 10px; /* [9.4] Yuvarlatılmış köşe */
+    padding: 10px 16px;  /* [9.5] İç boşluk */
+    cursor: pointer;     /* [9.6] Tıklanabilir imleç */
+  }
+  
+  /* [10] Kart bileşeni: gölgeli kutu */
+  .card {
+    background: #fff;                      /* [10.1] Beyaz zemin */
+    border-radius: 16px;                   /* [10.2] Yumuşak köşeler */
+    box-shadow: 0 6px 20px rgba(2,6,23,.08); /* [10.3] Hafif gölge */
+    padding: 16px;                         /* [10.4] İç boşluk */
+    margin-top: 12px;                      /* [10.5] Üst boşluk */
+  }
+  
+  /* [11] Dönen yükleniyor göstergesi */
+  .loader {
+    width: 28px;              /* [11.1] Genişlik */
+    height: 28px;             /* [11.2] Yükseklik */
+    border-radius: 50%;       /* [11.3] Daire */
+    border: 4px solid #e5e7eb;/* [11.4] Gri halka */
+    border-top-color: #2563eb;/* [11.5] Üst parça mavi olsun */
+    animation: spin 1s linear infinite; /* [11.6] Döndür animasyonu */
+    margin-left: 8px;         /* [11.7] Soldan küçük boşluk */
+  }
+  
+  /* [12] Loader için döndürme animasyonu */
+  @keyframes spin {
+    to { transform: rotate(360deg); } /* [12.1] 360 derece döndür */
+  }
+  
+  /* [13] Segment kartı: arka plan ve iç boşluk */
+  .segment-card {
+    background: #eef2ff; /* [13.1] Açık mavi arka plan */
+    border-radius: 12px; /* [13.2] Köşeler */
+    padding: 12px;       /* [13.3] İç boşluk */
+    margin: 10px 0;      /* [13.4] Dikey aralık */
+  }
+  
+  /* [14] Segment başlığı: kalın yazı ve alt boşluk */
+  .segment-header {
+    font-weight: 700; /* [14.1] Kalın */
+    margin-bottom: 6px; /* [14.2] Alt boşluk */
+  }
+  
+  /* [15] Soluk metin */
+  .muted {
+    color: #64748b; /* [15.1] Gri ton */
+  }
+  
+  /* [16] Konuşmacı grid (başlık ve satır alanı) */
+  .speakers-grid {
+    display: grid;                       /* [16.1] Grid düzeni */
+    grid-template-columns: 1fr 1fr;      /* [16.2] İki sütun (sol: orijinal, sağ: input) */
+    gap: 8px;                            /* [16.3] Hücreler arası boşluk */
+    align-items: center;                 /* [16.4] Dikey hizalama */
+    margin-top: 8px;                     /* [16.5] Üst boşluk */
+  }
+  
+  /* [17] Konuşmacı satırları için grid satırı */
+  .speakers-grid .row {
+    display: grid;                       /* [17.1] Grid olarak satır */
+    grid-template-columns: 1fr 1fr;      /* [17.2] İki sütun */
+    gap: 8px;                            /* [17.3] Hücre aralığı */
+  }
+  
+  /* [18] Grid başlık hücreleri */
+  .speakers-grid .head {
+    font-weight: 700;  /* [18.1] Kalın yazı */
+    color: #334155;    /* [18.2] Koyu gri/mavi ton */
+  }
+  
+  /* [19] Konuşmacı yeniden adlandırma input stili */
+  .speaker-input {
+    width: 100%;              /* [19.1] Hücre genişliğini doldur */
+    padding: 6px 8px;         /* [19.2] İç boşluk */
+    border: 1px solid #cbd5e1;/* [19.3] İnce gri kenar */
+    border-radius: 8px;       /* [19.4] Köşeler */
+  }
+  
+  /* [20] İnce ayırıcı çizgi */
+  .hr {
+    height: 1px;        /* [20.1] Yükseklik */
+    background: #e2e8f0;/* [20.2] Açık gri çizgi */
+    margin: 10px 0;     /* [20.3] Dikey boşluk */
+  }
+  
+  /* [21] Inline düzen (ayar kartları) */
+  .inline {
+    display: flex;                 /* [21.1] Yatay hizalama */
+    gap: 12px;                     /* [21.2] Eleman aralığı */
+    align-items: center;           /* [21.3] Dikey ortalama */
+    flex-wrap: wrap;               /* [21.4] Küçük ekranda sar */
+  }
+  
+  /* [22] Inline etiketi (label) hizalaması */
+  .inline label {
+    display: flex;     /* [22.1] Etiket + alan yan yana */
+    gap: 6px;          /* [22.2] Aralık */
+    align-items: center;/* [22.3] Dikey ortalama */
+  }
+  
+  /* [23] Text input ve select ortak görünümü */
+  .inline input[type="text"],
+  .inline select {
+    padding: 6px 8px;            /* [23.1] İç boşluk */
+    border: 1px solid #cbd5e1;   /* [23.2] İnce gri kenar */
+    border-radius: 8px;          /* [23.3] Köşeler */
+  }
+  
+  /* --- Form satırını hizalama düzeltmeleri --- */
+.upload-form { 
+  align-items: stretch;              /* Tüm öğeleri aynı yüksekliğe çek */
+}
+
+.file-label,
+.upload-form button,
+.upload-form .card.inline {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;                      /* Ortak yükseklik */
+  padding: 8px 12px;                 /* Tutarlı iç boşluk */
+  border-radius: 12px;               /* Aynı köşe yarıçapı */
+}
+
+/* Motor kutusunu daha hafif ve düzgün hizalı yap */
+.upload-form .card.inline {
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(2,6,23,.06);
+  margin: 0;                         /* Form içinde düşme olmasın */
+}
+
+.inline label { 
+  align-items: center; 
+  line-height: 1;
+  gap: 6px;
+}

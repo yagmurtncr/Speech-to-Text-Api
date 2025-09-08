@@ -1,0 +1,250 @@
+<!-- [0] Bu dosya: Uygulamanın tek sayfalık arayüzü (upload + polling + sonuç gösterimi) -->
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <!-- [1] Karakter seti ve responsive ayarlar -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <!-- [2] Başlık ve favicon -->
+  <title>Speech-to-Text Transcription</title>
+  <link rel="icon" href="/static/favicon.ico">
+
+  <!-- [3] Dış CSS -->
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- [4] Ana kapsayıcı -->
+  <div class="container">
+    <!-- [5] Üst başlık alanı -->
+    <header>
+      <h1>Speech-to-Text Transcription</h1> <!-- [5.1] Sayfa ana başlığı -->
+      <p class="subtitle">Ses veya video dosyanızı yükleyip yazıya dönüştürün</p> <!-- [5.2] Açıklama -->
+    </header>
+
+    <!-- [6] Upload formu -->
+    <form id="uploadForm" class="upload-form">
+      <!-- [6.1] Dosya seçimi -->
+      <label for="file" class="file-label">
+        Dosya Seç
+        <input type="file" id="file" name="file" required> <!-- [6.1.1] Zorunlu alan -->
+      </label>
+
+      <!-- [6.2] Motor seçimi (istersen bunu da kaldırabilirsin; altına not bıraktım) -->
+      <div class="card inline">
+        <strong>Model:</strong> <!-- [6.2.1] Grup etiketi -->
+        <label><input type="radio" name="engine" value="whisperx" checked> WhisperX</label> <!-- [6.2.2] Varsayılan -->
+        <label><input type="radio" name="engine" value="nvidia"> NVIDIA (Parakeet)</label> <!-- [6.2.3] Alternatif -->
+        <label><input type="radio" name="engine" value="whisperx_nemo"> WhisperX + NeMo</label>
+      </div>
+
+      <!-- [6.3] Hız/Model/Dil bloğu BURADAYDI — KALDIRILDI -->
+
+      <!-- [6.4] Gönder butonu + durum -->
+      <button type="submit">Transcribe</button> <!-- [6.4.1] İşlem başlat -->
+      <span id="status" class="muted"></span>   <!-- [6.4.2] Kısa durum metni -->
+      <div id="loader" class="loader" style="display:none;"></div> <!-- [6.4.3] Yükleniyor animasyonu -->
+    </form>
+
+    <!-- [7] Özet bilgiler kartı (dil, özet, segment sayısı) -->
+    <div id="result" class="card" style="display:none;">
+      <h2>Özet Bilgiler</h2>                            <!-- [7.1] Kart başlığı -->
+      <p><strong>Dil:</strong> <span id="language"></span></p>   <!-- [7.2] tespit edilen/atanan dil -->
+      <p><strong>Özet:</strong> <span id="summary"></span></p>   <!-- [7.3] metin özeti -->
+      <p><strong>Segment sayısı:</strong> <span id="segcount"></span></p> <!-- [7.4] segment adedi -->
+    </div>
+
+    <!-- [8] Konuşmacı yeniden adlandırma kartı -->
+    <div id="speakersCard" class="card" style="display:none;">
+      <h2>Konuşmacılar</h2> <!-- [8.1] Kart başlığı -->
+
+      <!-- [8.2] Grid başlıkları -->
+      <div class="speakers-grid">
+        <div class="head">Orijinal</div>
+        <div class="head">Yeni Ad</div>
+      </div>
+
+      <!-- [8.3] Konuşmacı satırları (JS ile doldurulur) -->
+      <div id="speakersList" class="speakers-grid"></div>
+
+      <!-- [8.4] Ayırıcı çizgi -->
+      <div class="hr"></div>
+
+      <!-- [8.5] Uygula butonu + durum -->
+      <button id="renameBtn">İsimleri Uygula</button>
+      <span id="renameStatus" class="muted" style="margin-left:8px;"></span>
+    </div>
+
+    <!-- [9] Segment kartları (JS ile doldurulur) -->
+    <div id="segments"></div>
+  </div>
+  <!-- [10] JS: fetch yardımcıları, form submit, polling ve render -->
+  <script>
+    // [10.1] httpJson: Hata gövdesini akıllıca okuyan sürüm
+    async function httpJson(url, opts = {}) {
+      const res  = await fetch(url, opts);
+      const raw  = await res.text();                // JSON olmasa bile oku
+    
+      if (!res.ok) {
+        // FastAPI tarzı {"detail": "..."} veya {"message": "..."} destekle
+        try {
+          const j = JSON.parse(raw || "{}");
+          const msg = j.detail || j.message || raw || `HTTP ${res.status}`;
+          throw new Error(msg);
+        } catch {
+          throw new Error(raw || `HTTP ${res.status}`);
+        }
+      }
+    
+      try { return JSON.parse(raw); }
+      catch { throw new Error("Sunucu JSON döndürmedi: " + raw.slice(0, 200)); }
+    }
+    
+    // [10.2] Sık kullanılan DOM referansları
+    const form         = document.getElementById("uploadForm");
+    const loader       = document.getElementById("loader");
+    const result       = document.getElementById("result");
+    const languageSpan = document.getElementById("language");
+    const summarySpan  = document.getElementById("summary");
+    const segCountSpan = document.getElementById("segcount");
+    const segmentsDiv  = document.getElementById("segments");
+    const statusSpan   = document.getElementById("status");
+    
+    const speakersCard = document.getElementById("speakersCard");
+    const speakersList = document.getElementById("speakersList");
+    const renameBtn    = document.getElementById("renameBtn");
+    const renameStatus = document.getElementById("renameStatus");
+    
+    // [10.3] Polling kontrol değişkenleri
+    let pollAbort       = null;   // AbortController referansı
+    let currentMediaId  = null;   // İşlenen dosyanın media_id’si
+    let currentSpeakers = [];     // Konuşmacı listesi
+    let completedShown  = false;  // “completed” toast’ı bir kez göster
+    
+    // [10.4] Basit yardımcılar
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+    function stopPolling() {
+      if (pollAbort) { pollAbort.abort(); pollAbort = null; }
+    }
+    window.addEventListener("beforeunload", stopPolling);
+    
+    // [10.5] Form submit: /transcribe çağrısı + sonuç polling
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      stopPolling();
+      loader.style.display = "inline-block";
+      result.style.display = "none";
+      speakersCard.style.display = "none";
+      speakersList.innerHTML = "";
+      segmentsDiv.innerHTML = "";
+      renameStatus.textContent = "";
+      statusSpan.textContent = "Yükleniyor…";
+      completedShown = false;
+    
+      const fd = new FormData(form);
+      try {
+        const data = await httpJson("/transcribe", { method: "POST", body: fd });
+        currentMediaId = data.media_id;
+        statusSpan.textContent = `Media ID: ${data.media_id} – işleniyor…`;
+        pollResults(data.media_id);
+      } catch (e) {
+        loader.style.display = "none";
+        const msg = e?.message || "bilinmiyor";
+        statusSpan.textContent = "Hata: " + msg;
+        alert("Hata: " + msg);
+      }
+    });
+    
+    // [10.6] Long-polling ile sonuçları sorgulama
+    async function pollResults(media_id) {
+      stopPolling();
+      pollAbort = new AbortController();
+      const signal = pollAbort.signal;
+    
+      let delay = 1500; // 1.5s → 5s
+      while (!signal.aborted) {
+        try {
+          const data = await httpJson(`/results/${media_id}`, { cache: "no-store", signal });
+          if (data.status === "completed" || (data.segments && Array.isArray(data.segments))) {
+            loader.style.display = "none";
+            renderResults(data);
+            if (!completedShown) { completedShown = true; alert("Transkripsiyon tamamlandı."); }
+            break;
+          }
+          await sleep(delay);
+          delay = Math.min(5000, delay + 500);
+        } catch (e) {
+          // Kullanıcı yeni bir upload başlatınca gelen normal iptal hatası
+          if (signal.aborted || e?.name === "AbortError") return;
+    
+          loader.style.display = "none";
+          const msg = e?.message || "bilinmiyor";
+          statusSpan.textContent = "Hata: " + msg;
+          alert("Hata: " + msg);
+          break;
+        }
+      }
+    }
+    
+    // [10.7] Sonuçları ekrana basma
+    function renderResults(data) {
+      result.style.display = "block";
+      const segs = Array.isArray(data.segments) ? data.segments : [];
+      const segLangs = [...new Set(segs.map(s => (s.lang || "").toLowerCase())
+                     .filter(v => v && v !== "unknown"))];
+      const topFromSegs = segLangs.length > 1 ? "multilanguage" : (segLangs[0] || null);
+      const langLabel = topFromSegs
+        || ((data.language && data.language !== "unknown") ? data.language : "Belirlenmedi");
+
+    
+      languageSpan.textContent = langLabel;
+      summarySpan.textContent  = data.summary || "Henüz oluşturulmadı";
+      segCountSpan.textContent = String(segs.length);
+    
+      segmentsDiv.innerHTML = "";
+      for (const seg of segs) {
+        const start = typeof seg.start === "number" ? seg.start.toFixed(2) : "-";
+        const end   = typeof seg.end   === "number" ? seg.end.toFixed(2)   : "-";
+        const card = document.createElement("div");
+        card.className = "segment-card";
+        card.innerHTML = `
+          <div class="segment-header">
+            ${seg.speaker || "speaker01"} (${start}s - ${end}s)
+            — <small>lang: ${seg.lang || "unknown"}</small>
+          </div>
+          <div>${seg.text || ""}</div>
+          <div>Emotion: ${seg.emotion || seg.emotion_pred || "neutral"}</div>
+        `;
+
+        segmentsDiv.appendChild(card);
+      }
+    }
+    
+    // [10.8] Konuşmacı isimlerini uygulama
+    renameBtn.addEventListener("click", async () => {
+      const inputs = speakersList.querySelectorAll("input[data-old]");
+      const mapping = {};
+      inputs.forEach(inp => {
+        const oldName = inp.getAttribute("data-old");
+        const newName = (inp.value || "").trim();
+        if (newName && newName !== oldName) mapping[oldName] = newName;
+      });
+      if (Object.keys(mapping).length === 0) {
+        renameStatus.textContent = "Değişiklik yok.";
+        return;
+      }
+      renameStatus.textContent = "Kaydediliyor…";
+      try {
+        await httpJson(`/speakers/${currentMediaId}/rename`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mapping, update_json: true, reindex_es: true }),
+        });
+        renameStatus.textContent = "OK";
+      } catch (e) {
+        renameStatus.textContent = "Hata: " + (e.message || "bilinmiyor");
+      }
+    });
+    </script>    
+</body>
+</html>
