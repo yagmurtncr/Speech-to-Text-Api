@@ -491,14 +491,6 @@ SENTRY_DSN=https://your-sentry-dsn
 LOG_LEVEL=INFO
 ```
 
-## 🤝 Katkıda Bulunma
-
-1. Projeyi fork edin
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Değişiklikleri commit edin (`git commit -m 'feat: add amazing feature'`)
-4. Branch'i push edin (`git push origin feature/amazing-feature`)
-5. Pull Request açın
-
 ### Commit Kuralları
 ```
 feat: yeni özellik ekleme
@@ -510,20 +502,4 @@ test: test ekleme/güncelleme
 perf: performans iyileştirme
 ```
 
-## 📄 Lisans
 
-Bu proje MIT Lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasına bakınız.
-
-## 🙏 Teşekkürler
-
-- [OpenAI Whisper](https://github.com/openai/whisper) - Ses tanıma modeli
-- [WhisperX](https://github.com/m-bain/whisperX) - Hızlı Whisper implementasyonu
-- [Pyannote](https://github.com/pyannote/pyannote-audio) - Konuşmacı diarization
-- [HuggingFace](https://huggingface.co/) - NLP modelleri ve pipeline'lar
-- [FastAPI](https://fastapi.tiangolo.com/) - Modern web framework
-
----
-
-**⚠️ Önemli Not**: Bu proje halen aktif geliştirme aşamasındadır. Production ortamında kullanmadan önce kapsamlı test yapmanız, güvenlik kontrollerini tamamlamanız ve monitoring sistemlerini kurmanız önerilir.
-
-**📧 Destek**: Sorularınız için GitHub Issues kullanın veya [email@domain.com](mailto:email@domain.com) adresine yazın.
