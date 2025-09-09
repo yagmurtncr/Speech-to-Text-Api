@@ -491,15 +491,5 @@ SENTRY_DSN=https://your-sentry-dsn
 LOG_LEVEL=INFO
 ```
 
-### Commit Kuralları
-```
-feat: yeni özellik ekleme
-fix: hata düzeltme
-docs: dokümantasyon güncelleme
-style: kod formatlama
-refactor: kod yeniden düzenleme
-test: test ekleme/güncelleme
-perf: performans iyileştirme
-```
 
 
