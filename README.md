@@ -1,5 +1,18 @@
 # 🎤 Speech-to-Text API
 
+<p>
+  <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/WhisperX%20%7C%20NeMo%20%7C%20Parakeet-ASR-EE4C2C" />
+  <img src="https://img.shields.io/badge/Kafka-231F20?logo=apachekafka&logoColor=white" />
+  <img src="https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white" />
+  <img src="https://img.shields.io/badge/Elasticsearch-005571?logo=elasticsearch&logoColor=white" />
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" />
+</p>
+
+> **Enterprise-grade speech-analysis API.** Transcribes audio with three interchangeable ASR engines
+> (WhisperX, WhisperX+NeMo, NVIDIA Parakeet), plus speaker diarization, emotion analysis, and
+> summarization — event-driven via Kafka with MongoDB + Elasticsearch storage. *Docs in Turkish.*
+
 **Çoklu ASR Motor Desteği ile Gelişmiş Ses Analiz Platformu**
 
 Bu proje, 3 farklı ASR motoru (WhisperX, WhisperX+NeMo, Nvidia Parakeet) ile ses dosyalarını metne dönüştüren, konuşmacı ayırma (diarization), duygu analizi ve Kafka, MongoDB, Elasticsearch entegrasyonu ile çalışan enterprise-grade bir API sistemidir.
