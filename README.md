@@ -17,6 +17,32 @@
 
 Bu proje, 3 farklı ASR motoru (WhisperX, WhisperX+NeMo, Nvidia Parakeet) ile ses dosyalarını metne dönüştüren, konuşmacı ayırma (diarization), duygu analizi ve Kafka, MongoDB, Elasticsearch entegrasyonu ile çalışan enterprise-grade bir API sistemidir.
 
+## 🏗️ Architecture
+
+```mermaid
+flowchart TD
+    Client["Client / Web UI"] -->|"upload audio"| API["FastAPI"]
+    API --> Prod["Kafka Producer"]
+    Prod --> Topic(["Kafka Topic"])
+    Topic --> Cons["Kafka Consumer (worker)"]
+
+    Cons --> Conv["Audio conversion"]
+    Conv --> ASR{"ASR Engine"}
+    ASR -->|option 1| WX["WhisperX"]
+    ASR -->|option 2| WXN["WhisperX + NeMo"]
+    ASR -->|option 3| PK["NVIDIA Parakeet"]
+
+    WX & WXN & PK --> Diar["Speaker diarization (Pyannote)"]
+    Diar --> Post["Post-processing / hypothesis fix"]
+    Post --> Emo["Emotion analysis (6 classes)"]
+    Emo --> Sum["Summarization"]
+
+    Sum --> Mongo[("MongoDB")]
+    Sum --> ES[("Elasticsearch")]
+    Mongo & ES --> API
+    API -->|"structured JSON"| Client
+```
+
 ## ✨ Temel Özellikler
 - 🎯 **3 ASR Motoru**: WhisperX, WhisperX+NeMo, Nvidia Parakeet
 - 🎤 **Konuşmacı Ayrımı**: Pyannote.audio ile hassas segmentasyon
