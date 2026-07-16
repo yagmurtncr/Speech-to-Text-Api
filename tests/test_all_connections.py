@@ -5,6 +5,7 @@ Tüm servis bağlantılarını test eden script
 
 import os
 import sys
+
 from dotenv import load_dotenv
 
 load_dotenv()

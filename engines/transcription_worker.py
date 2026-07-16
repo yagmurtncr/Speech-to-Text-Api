@@ -13,10 +13,15 @@
 # ============================================================
 
 # [1] Standart kütüphaneler
-import sys, os, json, re, time, glob
-from pathlib import Path
-from typing import Dict, Any, Tuple, Optional, List
+import glob
+import json
+import os
+import re
+import sys
+import time
 from contextlib import suppress
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 # [2] Proje kökü (engines.* importları için)
 ROOT = Path(__file__).resolve().parents[1]
@@ -31,11 +36,13 @@ os.environ.setdefault("KMP_AFFINITY", "disabled")
 
 # [4] NumPy ad güvenliği
 import numpy as _np
+
 if not hasattr(_np, "NaN"): _np.NaN = _np.nan
 if not hasattr(_np, "Inf"): _np.Inf = _np.inf
 
 # [5] Dış bağımlılıklar
 import ffmpeg
+
 try:
     from engines.nvidia_parakeet import transcribe_nvidia_parakeet as _run_parakeet
 except Exception:
@@ -258,26 +265,26 @@ def transcribe_and_enrich(file_path: str, options: Optional[Dict[str, Any]] = No
         #  Pure NVIDIA: Parakeet ASR + NVIDIA Diarization
         if _run_parakeet is None:
             raise ModuleNotFoundError("NVIDIA Parakeet engine eksik.")
-        print(f"[WORKER]  Pure NVIDIA engine başlatılıyor...")
+        print("[WORKER]  Pure NVIDIA engine başlatılıyor...")
         final_result = _run_parakeet(safe_path, device=common_params["device"], hf_token=common_params["hf_token"])
 
     elif engine == "whisperx_nemo":
         #  Hibrit: WhisperX ASR + NVIDIA Diarization 
         if _run_wx_nemo is None:
             raise ModuleNotFoundError("WhisperX + NeMo engine eksik.")
-        print(f"[WORKER]  WhisperX + NVIDIA Diarization başlatılıyor...")
+        print("[WORKER]  WhisperX + NVIDIA Diarization başlatılıyor...")
         final_result = _run_wx_nemo(**common_params)
 
     elif engine == "whisperx":
         #  WhisperX: WhisperX ASR + WhisperX Diarization
         transcriber = _import_whisperx_transcriber()
-        print(f"[WORKER]  WhisperX + Built-in Diarization başlatılıyor...")
+        print("[WORKER]  WhisperX + Built-in Diarization başlatılıyor...")
         final_result = transcriber(**common_params)
         
     else:
         #  Fallback: Basit WhisperX (diarization yok)
         transcriber = _import_whisperx_transcriber()
-        print(f"[WORKER]  Fallback: Temel WhisperX (diarization yok)")
+        print("[WORKER]  Fallback: Temel WhisperX (diarization yok)")
         final_result = transcriber(safe_path, language_hint=lang_hint)
 
     # [8.D] 'text' alanını garantiye al

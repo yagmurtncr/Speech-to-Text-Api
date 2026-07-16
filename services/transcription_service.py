@@ -7,30 +7,42 @@
 # ------------------------------------------------------------
 
 from __future__ import annotations  #  İleriye dönük type hint'ler (Python 3.10 öncesi kolaylığı)
-import os, uuid, shutil, asyncio, json, time  #  OS/dosya, UUID, kopyalama, async, JSON, zaman
-from datetime import timezone, datetime        #  ISO timestamp için
-from typing import Any, List, Dict             #  Tip ipuçları
-from fastapi import UploadFile                 #  FastAPI upload tipi
+
+import asyncio
+import json
+import os  #  OS/dosya, UUID, kopyalama, async, JSON, zaman
+import shutil
+import time
+import uuid
 from concurrent.futures import ProcessPoolExecutor  #  CPU-bound işleri paralel çalıştırmak için
-
-from engines.transcription_worker import run_in_subprocess  #  Asıl ağır işi yapan alt süreç çağrısı
-from save_to_mongo import save_media, save_segments         #  MongoDB yazıcı yardımcıları
-from save_to_elastic import save_to_elasticsearch           #  Elasticsearch indexleme helper'ı
-from kafka_producer import send_media_event                 #  Kafka'ya event atmak için
-
-from .storage_service import TMP_DIR, set_processing, set_completed, set_error  #  Job durum cache + yollar
-
+from datetime import datetime, timezone  #  ISO timestamp için
+from typing import Any, Dict, List  #  Tip ipuçları
 
 # ------------------------------------------------------------
 # Ortam ayarları, path düzeltmeleri
 # ------------------------------------------------------------
 from dotenv import load_dotenv
+from fastapi import UploadFile  #  FastAPI upload tipi
+
+from engines.transcription_worker import run_in_subprocess  #  Asıl ağır işi yapan alt süreç çağrısı
+from kafka_producer import send_media_event  #  Kafka'ya event atmak için
+from save_to_elastic import save_to_elasticsearch  #  Elasticsearch indexleme helper'ı
+from save_to_mongo import save_media, save_segments  #  MongoDB yazıcı yardımcıları
+
+from .storage_service import (  #  Job durum cache + yollar
+    TMP_DIR,
+    set_completed,
+    set_error,
+    set_processing,
+)
+
 load_dotenv()  #  .env dosyasını belleğe yükler; os.getenv(...) çağrıları buradan değer okur
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  #  Bu dosyanın bulunduğu klasör
 ROOT_DIR = os.path.dirname(BASE_DIR)                   #  Proje kök klasörü (services/.. → kök)
 
 import sys
+
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)                       #  Kök klasörü import yoluna ekle (alt süreçler için de)
 os.environ.setdefault("PYTHONPATH", ROOT_DIR)          #  ProcessPoolExecutor çocuklarının modülleri bulabilmesi için
@@ -119,7 +131,6 @@ def _fallback_summary(text: str, max_chars: int = 600) -> str:
     return cut[:last_dot+1] if last_dot >= 200 else cut + "..."
 
 # ---- SCHEMA GUARD: every segment must have 'text' as str ----
-from typing import Any
 
 def _ensure_text_field_on_segments(segments: List[dict]) -> List[dict]:
     safe = []

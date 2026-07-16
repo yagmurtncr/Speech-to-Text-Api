@@ -10,7 +10,9 @@
 # ------------------------------------------------------------
 
 # 1) Ortam / log / uyarı ayarları (stabil ve sakin çalışsın)
-import os, logging, warnings
+import logging
+import os
+import warnings
 
 _CPU_THREADS = str(max(2, (os.cpu_count() or 4)))
 os.environ["OMP_NUM_THREADS"] = _CPU_THREADS
@@ -26,17 +28,17 @@ warnings.filterwarnings("ignore", module="speechbrain")
 warnings.filterwarnings("ignore", message="Unverified HTTPS request")
 
 # 2) FastAPI / Starlette / Pydantic importları
-from fastapi import FastAPI, UploadFile, File, Request, HTTPException, Form
-from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
 # 3) Servis katmanı ve DB yardımcıları
 from db import test_connection
-from services.storage_service import on_startup, get_result_blob, get_job, results_cache
-from services.transcription_service import upload_and_start
 from services.speaker_service import get_speakers, rename_speakers
+from services.storage_service import get_job, get_result_blob, on_startup, results_cache
+from services.transcription_service import upload_and_start
 
 # 4) Uygulama ve dizinler
 app = FastAPI(title="Speech to Text API", version="2.0.0")  # Temel FastAPI uygulaması

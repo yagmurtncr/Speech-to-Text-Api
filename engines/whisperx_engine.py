@@ -6,15 +6,18 @@
 #  ✅ Cümle Segmentasyonu - Her cümle ayrı segment
 # ============================================================
 
-import os, json, re
-from typing import Optional
-from dotenv import load_dotenv
-import torch
-import whisperx
+import json
+import os
+import re
 from collections import Counter
+from typing import Optional
 
 # NumPy uyumluluk düzeltmesi
 import numpy as _np
+import torch
+import whisperx
+from dotenv import load_dotenv
+
 if not hasattr(_np, "NaN"): _np.NaN = _np.nan
 if not hasattr(_np, "Inf"): _np.Inf = _np.inf
 

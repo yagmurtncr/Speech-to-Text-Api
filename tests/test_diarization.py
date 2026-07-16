@@ -1,5 +1,6 @@
 # test_diarize_alone.py
 import os
+
 from whisperx.diarize import DiarizationPipeline
 
 wav = r"voices\small_talk.wav"

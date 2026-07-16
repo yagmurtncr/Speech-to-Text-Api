@@ -7,14 +7,17 @@
 # ============================================================
 
 import numpy as _np
+
 if not hasattr(_np, "NaN"): _np.NaN = _np.nan
 if not hasattr(_np, "Inf"): _np.Inf = _np.inf
 
-import os, json
-from typing import List, Dict, Any, Optional
-from dotenv import load_dotenv
+import json
+import os
+from typing import Any, Dict, List, Optional
+
 import torch
 import whisperx
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -66,8 +69,8 @@ def majority_label_for_sentence(sent, words, min_ratio=0.10):
 def get_nvidia_diar_segments(audio_path, device, min_spk=2, max_spk=2):
     """NVIDIA diarization kullanarak segment listesi döndür"""
     try:
-        from engines.nvidia_parakeet import _load_diar, _diarize
-        print(f"[NVIDIA-DIAR] NVIDIA diarization model yükleniyor...")
+        from engines.nvidia_parakeet import _diarize, _load_diar
+        print("[NVIDIA-DIAR] NVIDIA diarization model yükleniyor...")
         
         diar_model = _load_diar(device)
         diar_segments = _diarize(audio_path, diar_model)
@@ -89,7 +92,7 @@ def get_nvidia_diar_segments(audio_path, device, min_spk=2, max_spk=2):
                     merged.append(dict(d))
             return merged
         else:
-            print(f"[NVIDIA-DIAR] ✗ NVIDIA diarization boş sonuç")
+            print("[NVIDIA-DIAR] ✗ NVIDIA diarization boş sonuç")
             return []
     except Exception as e:
         print(f"[NVIDIA-DIAR] ✗ NVIDIA diarization hatası: {e}")
@@ -144,7 +147,7 @@ def transcribe_large(audio_path, device=None, compute_type=None, min_spk=2, max_
         if "CUDA" in str(e):
             device = "cpu"
             compute_type = "int8"
-            print(f"[WXN-ENGINE] CUDA hatası, CPU'ya geçiliyor")
+            print("[WXN-ENGINE] CUDA hatası, CPU'ya geçiliyor")
             model = whisperx.load_model("large-v3", device, compute_type=compute_type,
                                        task="translate" if translate_to_en else "transcribe")
         else:
@@ -206,14 +209,14 @@ def transcribe_large(audio_path, device=None, compute_type=None, min_spk=2, max_
             words_with_spk = assign_speakers_to_words(all_words, diar_segments)
             print(f"[WXN-DIAR] ✓ {len(words_with_spk)} kelimeye konuşmacı atandı")
         else:
-            print(f"[WXN-DIAR] ⚠ Diarization başarısız, tek konuşmacı varsayılıyor")
+            print("[WXN-DIAR] ⚠ Diarization başarısız, tek konuşmacı varsayılıyor")
     
     # Fallback
     if words_with_spk is None:
         words_with_spk = [{**w, "speaker": "SPEAKER_01"} for w in all_words]
 
     # Speaker assignment to sentences
-    print(f"[WXN-ENGINE] Cümlelere konuşmacı ataması yapılıyor...")
+    print("[WXN-ENGINE] Cümlelere konuşmacı ataması yapılıyor...")
     for s in final_sents:
         s["speaker"] = majority_label_for_sentence(s, words_with_spk)[0]
 

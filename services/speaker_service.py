@@ -6,11 +6,15 @@
 #    Mongo güncelle, istenirse sonuç JSON'u güncelle, istenirse ES'yi yeniden yaz.
 
 from __future__ import annotations
-from typing import Dict
+
 from datetime import datetime
+from typing import Dict
+
 from db import segments_col
 from save_to_elastic import save_to_elasticsearch
+
 from .storage_service import refresh_result_json_speakers
+
 
 def _utcnow_iso():
     from datetime import timezone

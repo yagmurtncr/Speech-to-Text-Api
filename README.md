@@ -1,6 +1,7 @@
 # 🎤 Speech-to-Text API
 
 <p>
+  <img src="https://github.com/yagmurtncr/Speech-to-Text-Api/actions/workflows/ci.yml/badge.svg" alt="CI" />
   <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white" />
   <img src="https://img.shields.io/badge/WhisperX%20%7C%20NeMo%20%7C%20Parakeet-ASR-EE4C2C" />
   <img src="https://img.shields.io/badge/Kafka-231F20?logo=apachekafka&logoColor=white" />

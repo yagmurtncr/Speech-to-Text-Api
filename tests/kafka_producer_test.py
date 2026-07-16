@@ -1,6 +1,8 @@
-from kafka_producer import send_media_event, test_kafka_connection, send_bulk_events
-import time
 import json
+import time
+
+from kafka_producer import send_bulk_events, send_media_event, test_kafka_connection
+
 
 def test_single_events():
     """Tek tek event gönderimi test eder"""

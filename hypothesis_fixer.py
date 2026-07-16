@@ -10,6 +10,7 @@
 import json
 import re
 
+
 def extract_text_from_hypothesis(hypothesis_str: str) -> str:
     """
     Verilen Hypothesis nesnesini temsil eden stringten gerçek metni çıkarır.

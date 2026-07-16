@@ -1,19 +1,25 @@
 from __future__ import annotations
-import os, logging, warnings
-import json, re
-from datetime import datetime, timezone
-from concurrent.futures import ThreadPoolExecutor
 
-from tqdm import tqdm
+import json
+import logging
+import os
+import re
+import warnings
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
+
 from dotenv import load_dotenv
+from engines.transcribe_large_multil import transcribe_large  # Geniş boyutlu transkripsiyon
+from tqdm import tqdm
 
 # Proje içi modüller (ayrı dosyalardan)
 from convert_audio import convert_to_wav  # Ses dosyasını WAV formatına çevirir
-from save_to_mongo import save_converted_file_bulk, save_media, save_segments  # MongoDB işlemleri
-from kafka_producer import send_media_event  # Kafka'ya event gönderimi
-from engines.transcribe_large_multil import transcribe_large  # Geniş boyutlu transkripsiyon
 from emotion_detection import EmotionJSONAnalyzer  # Duygu analiz modeli
-from services.speaker_service import SpeakerDiarizationService  # (Eğer varsa) konuşmacı ayrımı servisi
+from kafka_producer import send_media_event  # Kafka'ya event gönderimi
+from save_to_mongo import save_converted_file_bulk, save_media, save_segments  # MongoDB işlemleri
+from services.speaker_service import (
+    SpeakerDiarizationService,  # (Eğer varsa) konuşmacı ayrımı servisi
+)
 
 # Sistem ve Ortam Ayarları
 

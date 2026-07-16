@@ -6,13 +6,14 @@
 # ---------------------------------------------------------------
 
 from __future__ import annotations  # İleriye referans verilen type hint'ler için (py3.7+)
-import json                        # JSON okuma/yazma yardımcıları
+
+import json  # JSON okuma/yazma yardımcıları
 from dataclasses import dataclass  # Kolay veri sınıfı tanımı için
-from typing import List, Dict, Any, Optional, Tuple  # Tip ipuçları
-from pathlib import Path           # (Şu an kullanılmıyor ama dosya yolları için faydalı olabilir)
+from pathlib import Path  # (Şu an kullanılmıyor ama dosya yolları için faydalı olabilir)
+from typing import Any, Dict, List, Optional, Tuple  # Tip ipuçları
 
 # Transformers ekosistemi: tokenizer, model ve pipeline
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
 
 # 6 etiketli nihai duygu kümesi
 # Not: 'disgust' bu sınıfta yok; orijinal model 7 etiketli.

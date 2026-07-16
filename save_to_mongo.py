@@ -9,15 +9,15 @@
 
 from __future__ import annotations
 
-from typing import List, Dict, Any, Optional
-from datetime import datetime, timezone
 import logging
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 
 from pymongo import UpdateOne
 from pymongo.results import BulkWriteResult
 
 # Koleksiyon referansları ve init fonksiyonu
-from db import media_col, segments_col, init_collections
+from db import init_collections, media_col, segments_col
 
 log = logging.getLogger("save_to_mongo")
 logging.basicConfig(level=logging.INFO)

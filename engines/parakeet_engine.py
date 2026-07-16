@@ -6,16 +6,23 @@
 # ------------------------------------------------------------
 
 from __future__ import annotations
-import os, uuid, re, json
-from typing import Any, Dict, List, Optional, Tuple
+
+import json
+import os
+import re
+import uuid
 from contextlib import suppress  # Hata yakalama için güvenli context manager
+from typing import Any, Dict, List, Optional, Tuple
 
 import torch  # NVIDIA model'ları için
-from pydub import AudioSegment  # Ses dosyası manipülasyonu için
 from dotenv import load_dotenv  # Çevre değişkenlerini .env dosyasından yükle
 
 # NVIDIA NeMo kütüphanesi - Konuşma tanıma ve diarization için
-from nemo.collections.asr.models import ASRModel  # Ana ASR (Automatic Speech Recognition) model sınıfı
+from nemo.collections.asr.models import (
+    ASRModel,  # Ana ASR (Automatic Speech Recognition) model sınıfı
+)
+from pydub import AudioSegment  # Ses dosyası manipülasyonu için
+
 try:
     # Diarization için Sortformer modelini yükle (farklı import yolları denenerek)
     from nemo.collections.asr.models import SortformerEncLabelModel
@@ -122,8 +129,8 @@ def _load_asr(device: str, hf_token: str = None) -> Tuple[ASRModel, str]:
     """
     print(f"[NVIDIA-ASR] ASR Model yükleniyor: {ASR_HF_ID}")
     try:
-    m = ASRModel.from_pretrained(ASR_HF_ID).to(device)
-        print(f"[NVIDIA-ASR] ✅ ASR Model başarıyla yüklendi!")
+        m = ASRModel.from_pretrained(ASR_HF_ID).to(device)
+        print("[NVIDIA-ASR] ✅ ASR Model başarıyla yüklendi!")
     except Exception as e:
         print(f"[NVIDIA-ASR] ❌ ASR Model yükleme hatası: {e}")
         raise
@@ -139,8 +146,8 @@ def _load_diar(device: str, hf_token: str = None) -> SortformerEncLabelModel:
     print(f"[NVIDIA-DIAR] Diarization Model yükleniyor: {DIAR_ID}")
     
     try:
-    d = SortformerEncLabelModel.from_pretrained(DIAR_ID).to(device)
-        print(f"[NVIDIA-DIAR] ✅ Diarization model başarıyla yüklendi!")
+        d = SortformerEncLabelModel.from_pretrained(DIAR_ID).to(device)
+        print("[NVIDIA-DIAR] ✅ Diarization model başarıyla yüklendi!")
     except Exception as e:
         print(f"[NVIDIA-DIAR] ❌ Diarization model yükleme hatası: {e}")
         raise
@@ -267,7 +274,7 @@ def transcribe_nvidia_parakeet(audio_path: str, device: Optional[str] = None, hf
     
     # 🔑 GLOBAL TOKEN AUTHENTICATION - NeMo için kritik!
     if hf_token:
-        print(f"[NVIDIA-ENGINE] 🔑 Global HF authentication başlatılıyor...")
+        print("[NVIDIA-ENGINE] 🔑 Global HF authentication başlatılıyor...")
         
         # ÖNEMLİ: Önce tüm çakışan environment variables'ı temizle!
         conflicting_vars = [
@@ -293,11 +300,11 @@ def transcribe_nvidia_parakeet(audio_path: str, device: Optional[str] = None, hf
         os.environ["HUGGINGFACE_TOKEN"] = hf_token
         os.environ["HF_HOME"] = os.path.expanduser("~/.cache/huggingface")
         
-        print(f"[NVIDIA-ENGINE] ✅ Environment variables set edildi")
+        print("[NVIDIA-ENGINE] ✅ Environment variables set edildi")
         
         # Global HuggingFace login for session-wide authentication
         try:
-            from huggingface_hub import login, HfApi, logout
+            from huggingface_hub import HfApi, login, logout
             
             # Önce logout yap (eski session'ları temizle)
             try:
@@ -329,7 +336,7 @@ def transcribe_nvidia_parakeet(audio_path: str, device: Optional[str] = None, hf
     diar = _load_diar(device)  # Sortformer diarization modelini yükle
 
     # 4️ DİARİZATİON - Konuşmacı ayırma işlemi
-    print(f"[NVIDIA-DIAR] Diarization işlemi başlatılıyor...")
+    print("[NVIDIA-DIAR] Diarization işlemi başlatılıyor...")
     raw = _diarize(wav_path, diar) or [{"start": 0.0, "end": wav_dur, "speaker": "speaker01"}]  # Fallback: tek konuşmacı
     print(f"[NVIDIA-DIAR] {len(raw)} diarization segment bulundu")
     

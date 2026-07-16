@@ -9,9 +9,11 @@
 # ------------------------------------------------------------
 
 from __future__ import annotations
-import os, json
+
+import json
+import os
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 from db import media_col, segments_col, test_connection
 from save_to_elastic import create_indices

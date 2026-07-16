@@ -1,0 +1,25 @@
+[project]
+name = "speech-to-text-api"
+version = "1.0.0"
+description = "Enterprise speech-to-text API: WhisperX/NeMo/Parakeet, diarization, emotion, Kafka + MongoDB + Elasticsearch."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Nur Yağmur Tuncer" }]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+# Pyflakes + import order as the CI gate (catches real errors without drowning
+# a large service codebase in style nits). Broaden over time.
+select = ["F", "I"]
+ignore = ["F401", "E402"]
+
+[tool.pytest.ini_options]
+# Only the fast, dependency-free unit tests run in CI. The scripts under
+# tests/*.py are live integration checks (Kafka/Mongo/models) and are excluded.
+testpaths = ["tests/unit"]
+addopts = "-q"
+pythonpath = ["."]

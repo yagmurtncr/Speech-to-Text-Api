@@ -8,9 +8,10 @@
 # Not: ES kapalıysa client None döner; çağıran taraf bunu kontrol etmeli.
 # ============================================================
 
-import os
 import logging
+import os
 from typing import Optional
+
 from elasticsearch import Elasticsearch
 from packaging.version import Version  # ES versiyon kıyaslaması için
 

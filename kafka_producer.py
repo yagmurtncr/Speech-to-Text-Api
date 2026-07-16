@@ -8,13 +8,13 @@
 from __future__ import annotations
 
 import json
-import os
 import logging
+import os
 from datetime import datetime, timezone
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
-from kafka import KafkaProducer
 from dotenv import load_dotenv
+from kafka import KafkaProducer
 
 load_dotenv()
 

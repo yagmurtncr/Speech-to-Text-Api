@@ -7,13 +7,14 @@
 # ===============================================
 
 # Standart kütüphaneler
-import os                  # Ortam değişkenleri ve yol işlemleri için
-import logging             # Loglama için
+import logging  # Loglama için
+import os  # Ortam değişkenleri ve yol işlemleri için
 from typing import Optional  # İsteğe bağlı (nullable) tip açıklamaları için
 
 # Üçüncü parti kütüphaneler
-from dotenv import load_dotenv        # .env dosyasından ortam değişkenlerini yüklemek için
-from pymongo import MongoClient       # MongoDB istemcisi
+from dotenv import load_dotenv  # .env dosyasından ortam değişkenlerini yüklemek için
+from pymongo import MongoClient  # MongoDB istemcisi
+
 # Not: Gerekirse spesifik hata tipleri için from pymongo.errors import ... ekleyebilirsin
 
 # -------------------------------

@@ -5,12 +5,13 @@
 # - Bağlantı testi ve topic bilgisi alma yardımcıları içerir
 # -----------------------------------------------------------
 
-from kafka import KafkaConsumer          # Kafka tüketici (consumer) istemcisi
-import os                                # Ortam değişkenleri için
-import json                              # Mesaj gövdelerini JSON'a çevirmek için
-from dotenv import load_dotenv           # .env içindeki değişkenleri yüklemek için
-import logging                           # Loglama altyapısı
-from datetime import datetime            # (Şu an kullanılmıyor ama zaman damgası için faydalı)
+import json  # Mesaj gövdelerini JSON'a çevirmek için
+import logging  # Loglama altyapısı
+import os  # Ortam değişkenleri için
+from datetime import datetime  # (Şu an kullanılmıyor ama zaman damgası için faydalı)
+
+from dotenv import load_dotenv  # .env içindeki değişkenleri yüklemek için
+from kafka import KafkaConsumer  # Kafka tüketici (consumer) istemcisi
 
 # .env dosyasını belleğe yükle (KAFKA_BOOTSTRAP, KAFKA_TOPIC vb. için)
 load_dotenv()
